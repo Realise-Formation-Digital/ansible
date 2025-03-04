@@ -1,6 +1,7 @@
 ---
 - name: Install docker
-  become: root
+  hosts: all
+  become: true
 
   tasks:
     - name: Install docker dependencies
