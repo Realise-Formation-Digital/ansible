@@ -33,4 +33,6 @@
           - docker-ce
           - docker-buildx-plugin
           - docker-compose-plugin
+          - docker-ce-cli 
+          - containerd.io
         update_cache: true
