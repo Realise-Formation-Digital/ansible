@@ -2,6 +2,7 @@
 - name: Install core packages for virtual machines
   hosts: all
   become: yes
+  become_user: root
 
   tasks:
     - name: Install packages
