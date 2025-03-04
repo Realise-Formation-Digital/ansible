@@ -1,24 +1,19 @@
 ---
-- hosts: all
-  gather_facts: yes
-  become: yes
+- name: Install core packages for virtual machines
+  hosts: "{{ my_hosts | d([]) }}"
+  become: true
 
   tasks:
-    - name: Perform a dist-upgrade.
+    - name: Install packages
       ansible.builtin.apt:
-        upgrade: dist
-        update_cache: yes
+        name:
+          - prometheus-node-exporter
+          - nfs-common
+          - qemu-guest-agent
+        update_cache: true
 
-    - name: Check if a reboot is required.
-      ansible.builtin.stat:
-        path: /var/run/reboot-required
-        get_checksum: no
-      register: reboot_required_file
-
-    - name: Reboot the server (if required).
-      ansible.builtin.reboot:
-      when: reboot_required_file.stat.exists == true
-
-    - name: Remove dependencies that are no longer required.
-      ansible.builtin.apt:
-        autoremove: yes
+    - name: Start guest qemu-guest-agent
+      ansible.builtin.service:
+        name: qemu-guest-agent
+        state: started
+        enabled: true
