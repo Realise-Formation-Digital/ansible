@@ -11,9 +11,3 @@
           - nfs-common
           - qemu-guest-agent
         update_cache: true
-
-    - name: Start guest qemu-guest-agent
-      ansible.builtin.service:
-        name: qemu-guest-agent
-        state: started
-        enabled: true
