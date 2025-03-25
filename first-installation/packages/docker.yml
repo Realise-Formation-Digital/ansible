@@ -39,7 +39,6 @@
         repo: deb https://download.docker.com/linux/ubuntu noble stable
         state: present
 
-
     - name: Install required system packages
       apt:
         pkg:
