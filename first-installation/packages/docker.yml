@@ -76,3 +76,28 @@
         state: present
       with_sequence: count={{ container_count }}
 
+    - name: Create monitor network
+      docker_network:
+        name: portainer_agent_network
+        driver: overlay
+        attachable: yes
+
+    - name: Deploy monitor agent
+      docker_service:
+        name: portainer_agent
+        image: portainer/agent
+        mode: global
+        publish:
+          - mode: host
+            target_port: 9001
+            published_port: 9001
+        networks:
+          - portainer_agent_network
+        mounts:
+          - source: /var/run/docker.sock
+            target: /var/run/docker.sock
+            type: bind
+          - source: /var/lib/docker/volumes
+            target: /var/lib/docker/volumes
+            type: bind
+
