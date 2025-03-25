@@ -57,7 +57,7 @@
         state: present
 
     # sudo usermod -aG docker root
-    - name: Add remote "ubuntu" user to "docker" group
+    - name: Add remote "realise" user to "docker" group
       user:
         name: "realise"
         group: "docker"
