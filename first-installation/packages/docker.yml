@@ -60,7 +60,7 @@
     - name: Add remote "realise" user to "docker" group
       user:
         name: "realise"
-        group: "docker"
+        groups: "docker"
         append: yes
 
     - name: Pull default Docker image
