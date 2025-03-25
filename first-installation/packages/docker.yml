@@ -39,7 +39,7 @@
         repo: deb https://download.docker.com/linux/ubuntu noble stable
         state: present
 
-    - name: Install required system packages
+    - name: Install docker stuff
       apt:
         pkg:
           - docker-ce
@@ -53,7 +53,7 @@
     # sudo groupadd docker
     - name: Create "docker" group
       group:
-        name: "{{ docker_group }}"
+        name: "docker"
         state: present
 
     # sudo usermod -aG docker root
