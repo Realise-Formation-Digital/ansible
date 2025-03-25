@@ -1,6 +1,6 @@
 ---
 - hosts: all
-  become: true
+  become: yes
   vars:
     container_count: 4
     default_container_name: docker
