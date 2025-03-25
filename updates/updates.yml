@@ -23,9 +23,3 @@
     - name: Remove dependencies that are no longer required.
       ansible.builtin.apt:
         autoremove: yes
-
-    - name: Start guest qemu-guest-agent
-      ansible.builtin.service:
-        name: qemu-guest-agent
-        state: started
-        enabled: true
