@@ -39,16 +39,17 @@
         repo: deb https://download.docker.com/linux/ubuntu noble stable
         state: present
 
-    - name: Update apt and install docker stuff
+
+    - name: Install required system packages
       apt:
         pkg:
           - docker-ce
           - docker-ce-cli
-          - "containerd.io"
+          - containerd.io
           - docker-buildx-plugin
           - docker-compose-plugin
-      state: latest
-      update_cache: true
+        state: latest
+        update_cache: true
 
     # sudo groupadd docker
     - name: Create "docker" group
