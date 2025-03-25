@@ -83,7 +83,7 @@
         attachable: yes
 
     - name: Deploy monitor agent
-      docker_compose_v2:
+      docker_container:
         name: portainer_agent
         image: portainer/agent
         mode: global
