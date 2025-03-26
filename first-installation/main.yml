@@ -1,0 +1,14 @@
+---
+- hosts: all
+  become: yes
+  become_user: root
+  vars:
+    container_count: 4
+    default_container_name: docker
+    default_container_image: ubuntu
+    default_container_command: sleep 1d
+    portainer_agent:
+
+  tasks:
+    - include_tasks: ./packages/docker.yml
+    - include_tasks: ./packages/packages.yml

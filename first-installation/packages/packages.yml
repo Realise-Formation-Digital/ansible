@@ -1,20 +1,25 @@
 ---
-- name: Install core packages for virtual machines
-  hosts: all
-  become: yes
-  become_user: root
+- name: Install packages
+  ansible.builtin.apt:
+    name:
+      - prometheus-node-exporter
+      - nfs-common
+      - qemu-guest-agent
+      - hdparm
+      - inxi
+      - htop
+      - mosh
+      - whois
+      - nmap
+      - iperf
+      - apcupsd
+      - apcupsd-doc
+      - intel-microcode
+      - iucode-tool
+    update_cache: true
 
-  tasks:
-    - name: Install packages
-      ansible.builtin.apt:
-        name:
-          - prometheus-node-exporter
-          - nfs-common
-          - qemu-guest-agent
-        update_cache: true
-
-    - name: Start guest qemu-guest-agent
-      ansible.builtin.service:
-        name: qemu-guest-agent
-        state: started
-        enabled: true
+- name: Start guest qemu-guest-agent
+  ansible.builtin.service:
+    name: qemu-guest-agent
+    state: started
+    enabled: true
