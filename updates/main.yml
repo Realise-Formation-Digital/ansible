@@ -10,6 +10,4 @@
     portainer_agent:
 
   tasks:
-    - include_tasks: ../updates/updates.yml
-    - include_tasks: ./packages/docker.yml
-    - include_tasks: ./packages/packages.yml
+    - include_tasks: ./updates.yml
