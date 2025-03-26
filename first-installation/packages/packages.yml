@@ -16,6 +16,7 @@
       - apcupsd-doc
       - intel-microcode
       - iucode-tool
+      - net-tools
     update_cache: true
 
 - name: Start guest qemu-guest-agent
