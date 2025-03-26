@@ -18,7 +18,7 @@
 
     - name: Reboot the server (if required).
       ansible.builtin.reboot:
-        reboot_timeout: 3600
+        reboot_timeout: 300
       when: reboot_required_file.stat.exists == true
 
     - name: Remove dependencies that are no longer required.
