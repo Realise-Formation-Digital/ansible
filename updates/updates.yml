@@ -1,8 +1,10 @@
 ---
-- name: Perform a dist-upgrade.
+- name: Update all packages to the latest version.
   ansible.builtin.apt:
-    upgrade: dist
-    update_cache: yes
+      update_cache: true
+      cache_valid_time: 3600
+      name: "*"
+      state: latest
 
 - name: Check if a reboot is required.
   ansible.builtin.stat:
