@@ -14,7 +14,7 @@
 
 - name: Reboot the server (if required).
   ansible.builtin.reboot:
-    reboot_timeout: 300
+    reboot_timeout: 600
     test_command: ping -c 4 192.168.100.3
   when: reboot_required_file.stat.exists == true
 
