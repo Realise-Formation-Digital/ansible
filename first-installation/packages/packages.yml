@@ -30,3 +30,5 @@
       - hostname: docker-ntp.realise.ch
         pool: yes
         iburst: yes
+        nts: yes
+
