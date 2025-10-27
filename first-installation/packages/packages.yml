@@ -24,3 +24,9 @@
     name: qemu-guest-agent
     state: started
     enabled: true
+
+- name: NTP Server
+  timesync_ntp_servers:
+      - hostname: docker-ntp.realise.ch
+        pool: yes
+        iburst: yes
