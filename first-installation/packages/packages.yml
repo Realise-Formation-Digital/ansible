@@ -31,4 +31,8 @@
         pool: yes
         iburst: yes
         nts: yes
+        
+- name: Set timezone to Europe/Zurich
+  community.general.timezone:
+    name: Europe/Zurich
 
