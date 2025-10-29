@@ -25,7 +25,7 @@
     state: started
     enabled: true
 
-- name: Install NTP Server$
+- name: Install NTP Server
   timesync_ntp_servers:
       - hostname: docker-ntp.realise.ch
         pool: yes
