@@ -27,10 +27,10 @@
 
 - name: Install NTP Server
   timesync_ntp_servers:
-      - hostname: docker-ntp.realise.ch
-        pool: yes
-        iburst: yes
-        nts: yes
+     hostname: docker-ntp.realise.ch
+     pool: yes
+     iburst: yes
+     nts: yes
         
 - name: Set timezone to Europe/Zurich
   community.general.timezone:
