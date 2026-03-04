@@ -46,8 +46,38 @@
     port: '9100'
     proto: tcp
 
+# Allow Prometheus server port for queries and federation.
+- name: Allow Prometheus (port 9090) through ufw
+  community.general.ufw:
+    rule: allow
+    port: '9090'
+    proto: tcp
+
+# Allow Grafana web UI port.
+- name: Allow Grafana (port 3000) through ufw
+  community.general.ufw:
+    rule: allow
+    port: '3000'
+    proto: tcp
+
+# Allow outgoing syslog to an external syslog server (UDP 514).
+# ufw allows all outgoing traffic by default, but this makes the policy explicit.
+- name: Allow outgoing syslog (UDP 514)
+  community.general.ufw:
+    rule: allow
+    direction: out
+    port: '514'
+    proto: udp
+
+# Allow outgoing syslog over TCP for reliable delivery (RFC 6587).
+- name: Allow outgoing syslog (TCP 514)
+  community.general.ufw:
+    rule: allow
+    direction: out
+    port: '514'
+    proto: tcp
+
 # Enable ufw with a default deny policy for incoming traffic.
-# SSH, Portainer Agent and Prometheus node exporter are already allowed above.
 - name: Enable ufw with default deny policy
   community.general.ufw:
     state: enabled
