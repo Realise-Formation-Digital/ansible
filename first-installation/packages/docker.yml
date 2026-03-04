@@ -5,22 +5,19 @@
 
 # aptitude is required for advanced apt dependency management.
 - name: Install aptitude
-  apt:
+  ansible.builtin.apt:
     name: aptitude
     state: latest
     update_cache: true
 
 # System packages required to add external repositories over HTTPS.
+# Note: apt-transport-https is not needed on Ubuntu 18.04+ (built into apt).
 - name: Install required system packages
-  apt:
+  ansible.builtin.apt:
     pkg:
-      - apt-transport-https
       - ca-certificates
       - curl
       - software-properties-common
-      - python3-pip
-      - virtualenv
-      - python3-setuptools
     state: latest
     update_cache: true
 
@@ -51,12 +48,12 @@
   ansible.builtin.apt_repository:
     repo: "deb [arch={{ deb_architecture.stdout }} signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
     state: present
-    update_cache: yes
+    update_cache: true
     filename: docker
 
 # Install Docker Engine and the plugins required for compose and buildx.
-- name: Install docker stuff
-  apt:
+- name: Install Docker
+  ansible.builtin.apt:
     pkg:
       - docker-ce
       - docker-ce-cli
@@ -68,32 +65,26 @@
 
 # Create the 'docker' group to allow daemon access without sudo.
 - name: Create "docker" group
-  group:
-    name: "docker"
+  ansible.builtin.group:
+    name: docker
     state: present
 
 # Add the 'realise' user to the docker group so they can run Docker commands without sudo.
-- name: Add remote "realise" user to "docker" group
-  user:
-    name: "realise"
-    groups: "docker"
-    append: yes
-
-# Add the 'maintenance' user to the docker group so Semaphore can run Docker commands.
-- name: Add maintenance user to "docker" group
-  user:
-    name: "maintenance"
-    groups: "docker"
-    append: yes
+- name: Add realise user to "docker" group
+  ansible.builtin.user:
+    name: realise
+    groups: docker
+    append: true
 
 # Start the Portainer Agent container listening on port 9001.
 # Allows a central Portainer instance to manage this host.
 # - /var/run/docker.sock: access to the local Docker daemon
 # - /var/lib/docker/volumes: visibility over Docker volumes
+# Pin the image version to ensure reproducible deployments.
 - name: Deploy Portainer Agent
   community.docker.docker_container:
     name: portainer_agent
-    image: portainer/agent:latest
+    image: portainer/agent:2.21.0
     state: started
     restart_policy: always
     ports:

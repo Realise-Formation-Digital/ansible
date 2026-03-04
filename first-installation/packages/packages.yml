@@ -68,7 +68,13 @@
     path: /etc/default/sysstat
     regexp: '^ENABLED='
     line: 'ENABLED="true"'
-  notify: restart sysstat
+
+# Restart sysstat to apply the ENABLED setting change.
+- name: Restart sysstat
+  ansible.builtin.service:
+    name: sysstat
+    state: restarted
+    enabled: true
 
 # NTP and timezone commented out: enable once the internal NTP server is available.
 #- name: Install NTP Server

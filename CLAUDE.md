@@ -6,6 +6,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is an Ansible repository for managing Ubuntu-based Linux hosts. It targets servers in a homelab/self-hosted environment (Proxmox) and assumes SSH access with privilege escalation (`become: yes`).
 
+## Setup
+
+Install required Ansible collections before running any playbook:
+
+```bash
+ansible-galaxy collection install -r requirements.yml
+```
+
 ## Running Playbooks
 
 ```bash

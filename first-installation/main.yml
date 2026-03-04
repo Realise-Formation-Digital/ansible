@@ -10,12 +10,11 @@
 #   5. users.yml        - create users and harden SSH configuration
 
 - hosts: all
-  become: yes
-  become_user: root
+  become: true
 
   tasks:
-    - include_tasks: ../updates/updates.yml
-    - include_tasks: ./packages/docker.yml
-    - include_tasks: ./packages/packages.yml
-    - include_tasks: ./security/security.yml
-    - include_tasks: ./users/users.yml
+    - import_tasks: ../updates/updates.yml
+    - import_tasks: ./packages/docker.yml
+    - import_tasks: ./packages/packages.yml
+    - import_tasks: ./security/security.yml
+    - import_tasks: ./users/users.yml

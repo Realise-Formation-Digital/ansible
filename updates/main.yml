@@ -5,8 +5,7 @@
 # Also used by Semaphore UI for automated updates via the 'maintenance' user.
 
 - hosts: all
-  become: yes
-  become_user: root
+  become: true
 
   tasks:
-    - include_tasks: ./updates.yml
+    - import_tasks: ./updates.yml

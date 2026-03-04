@@ -9,7 +9,7 @@
     name: maintenance
     shell: /bin/bash
     state: present
-    create_home: yes
+    create_home: true
 
 # Allow the maintenance user to run sudo commands without a password.
 # The file is validated by visudo before being written to prevent syntax errors.
@@ -19,6 +19,14 @@
     content: "maintenance ALL=(ALL) NOPASSWD: ALL\n"
     mode: '0440'
     validate: visudo -cf %s
+
+# Add the maintenance user to the docker group so Semaphore can run Docker commands.
+# Placed here (after user creation) to ensure the user exists before group assignment.
+- name: Add maintenance user to "docker" group
+  ansible.builtin.user:
+    name: maintenance
+    groups: docker
+    append: true
 
 # Create the .ssh directory with correct permissions for key-based authentication.
 - name: Create .ssh directory for maintenance user
@@ -42,13 +50,13 @@
 
 # Verify the SSH configuration file exists before modifying it.
 - name: SSHD | Check if sshd config exist
-  stat:
+  ansible.builtin.stat:
     path: /etc/ssh/sshd_config
   register: stat_result
 
 # Disable direct root login via SSH (active setting).
 - name: SSHD | Prevent root access via SSH (1/2)
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: /etc/ssh/sshd_config
     regexp: '^PermitRootLogin '
     insertafter: 'LoginGraceTime'
@@ -58,7 +66,7 @@
 
 # Remove any commented-out #PermitRootLogin line to avoid ambiguity.
 - name: SSHD | Prevent root access via SSH (2/2)
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: /etc/ssh/sshd_config
     regexp: '^#PermitRootLogin '
     state: absent
