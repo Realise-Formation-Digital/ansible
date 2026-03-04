@@ -1,0 +1,73 @@
+---
+# Task list: security hardening - firewall, brute force protection, automatic security updates.
+
+# --- fail2ban ---
+
+# Install fail2ban to automatically ban IPs that fail SSH authentication repeatedly.
+- name: Install fail2ban
+  ansible.builtin.apt:
+    name: fail2ban
+    state: present
+    update_cache: true
+
+# Enable and start fail2ban (default config protects SSH out of the box).
+- name: Enable and start fail2ban
+  ansible.builtin.service:
+    name: fail2ban
+    state: started
+    enabled: true
+
+# --- ufw (firewall) ---
+
+# Install ufw for simple firewall management.
+- name: Install ufw
+  ansible.builtin.apt:
+    name: ufw
+    state: present
+
+# Always allow SSH before enabling the firewall to avoid locking ourselves out.
+- name: Allow SSH (port 22) through ufw
+  community.general.ufw:
+    rule: allow
+    port: '22'
+    proto: tcp
+
+# Allow Portainer Agent port so the central Portainer instance can reach this host.
+- name: Allow Portainer Agent (port 9001) through ufw
+  community.general.ufw:
+    rule: allow
+    port: '9001'
+    proto: tcp
+
+# Allow Prometheus node exporter port for metrics scraping.
+- name: Allow Prometheus node exporter (port 9100) through ufw
+  community.general.ufw:
+    rule: allow
+    port: '9100'
+    proto: tcp
+
+# Enable ufw with a default deny policy for incoming traffic.
+# SSH, Portainer Agent and Prometheus node exporter are already allowed above.
+- name: Enable ufw with default deny policy
+  community.general.ufw:
+    state: enabled
+    policy: deny
+    direction: incoming
+
+# --- unattended-upgrades ---
+
+# Install unattended-upgrades to automatically apply security patches.
+# Full upgrades are handled by Semaphore UI via the maintenance user.
+- name: Install unattended-upgrades
+  ansible.builtin.apt:
+    name:
+      - unattended-upgrades
+      - apt-listchanges
+    state: present
+
+# Enable and start the unattended-upgrades service.
+- name: Enable and start unattended-upgrades
+  ansible.builtin.service:
+    name: unattended-upgrades
+    state: started
+    enabled: true

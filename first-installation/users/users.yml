@@ -1,11 +1,52 @@
 ---
-# tasks file for itopie.common
+# Task list: user management and SSH hardening.
 
+# --- maintenance user (Semaphore UI) ---
+
+# Create the 'maintenance' user used by Semaphore UI for automated updates.
+- name: Create maintenance user
+  ansible.builtin.user:
+    name: maintenance
+    shell: /bin/bash
+    state: present
+    create_home: yes
+
+# Allow the maintenance user to run sudo commands without a password.
+# The file is validated by visudo before being written to prevent syntax errors.
+- name: Grant maintenance user passwordless sudo
+  ansible.builtin.copy:
+    dest: /etc/sudoers.d/maintenance
+    content: "maintenance ALL=(ALL) NOPASSWD: ALL\n"
+    mode: '0440'
+    validate: visudo -cf %s
+
+# Create the .ssh directory with correct permissions for key-based authentication.
+- name: Create .ssh directory for maintenance user
+  ansible.builtin.file:
+    path: /home/maintenance/.ssh
+    state: directory
+    owner: maintenance
+    group: maintenance
+    mode: '0700'
+
+# Create an empty authorized_keys file, ready to receive the Semaphore public key.
+- name: Create empty authorized_keys for maintenance user
+  ansible.builtin.file:
+    path: /home/maintenance/.ssh/authorized_keys
+    state: touch
+    owner: maintenance
+    group: maintenance
+    mode: '0600'
+
+# --- SSH hardening ---
+
+# Verify the SSH configuration file exists before modifying it.
 - name: SSHD | Check if sshd config exist
   stat:
     path: /etc/ssh/sshd_config
   register: stat_result
 
+# Disable direct root login via SSH (active setting).
 - name: SSHD | Prevent root access via SSH (1/2)
   lineinfile:
     path: /etc/ssh/sshd_config
@@ -15,6 +56,7 @@
     state: present
   when: stat_result.stat.exists
 
+# Remove any commented-out #PermitRootLogin line to avoid ambiguity.
 - name: SSHD | Prevent root access via SSH (2/2)
   lineinfile:
     path: /etc/ssh/sshd_config

@@ -1,15 +1,21 @@
 ---
+# First installation playbook for new hosts.
+# Run with: ansible-playbook first-installation/main.yml -i <inventory>
+#
+# Execution order:
+#   1. updates.yml      - update all packages and reboot if required
+#   2. docker.yml       - install Docker and Portainer Agent
+#   3. packages.yml     - install additional system packages
+#   4. security.yml     - configure firewall (ufw), fail2ban, unattended-upgrades
+#   5. users.yml        - create users and harden SSH configuration
+
 - hosts: all
   become: yes
   become_user: root
-  vars:
-    container_count: 4
-    default_container_name: docker
-    default_container_image: ubuntu
-    default_container_command: sleep 1d
-    portainer_agent:
 
   tasks:
     - include_tasks: ../updates/updates.yml
     - include_tasks: ./packages/docker.yml
     - include_tasks: ./packages/packages.yml
+    - include_tasks: ./security/security.yml
+    - include_tasks: ./users/users.yml

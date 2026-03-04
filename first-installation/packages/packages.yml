@@ -1,4 +1,30 @@
 ---
+# Task list: additional system packages for all hosts.
+
+# Packages installed:
+#   prometheus-node-exporter  - exports system metrics for Prometheus (port 9100)
+#   nfs-common                - NFS client support for network share mounts
+#   qemu-guest-agent          - integration with the QEMU/Proxmox hypervisor
+#   hdparm                    - disk management utility
+#   inxi                      - system information tool
+#   htop                      - interactive process monitor
+#   iotop                     - per-process I/O monitor
+#   ncdu                      - interactive disk usage analyzer
+#   nethogs                   - per-process network traffic monitor
+#   mosh                      - SSH alternative resilient to network interruptions
+#   whois                     - WHOIS lookup for domains and IPs
+#   nmap                      - network scanner
+#   iperf                     - network bandwidth test tool
+#   dnsutils                  - DNS utilities (dig, nslookup)
+#   rsync                     - file synchronization and backup
+#   jq                        - JSON processor for shell scripting
+#   lsof                      - list open files and sockets
+#   wget                      - HTTP downloader
+#   sysstat                   - system activity reporter (iostat, sar, mpstat)
+#   smartmontools             - disk health monitoring via S.M.A.R.T.
+#   apcupsd / apcupsd-doc     - APC UPS management
+#   intel-microcode / iucode-tool - Intel CPU microcode updates
+#   net-tools                 - classic network utilities (ifconfig, netstat, etc.)
 - name: Install packages
   ansible.builtin.apt:
     name:
@@ -8,10 +34,20 @@
       - hdparm
       - inxi
       - htop
+      - iotop
+      - ncdu
+      - nethogs
       - mosh
       - whois
       - nmap
       - iperf
+      - dnsutils
+      - rsync
+      - jq
+      - lsof
+      - wget
+      - sysstat
+      - smartmontools
       - apcupsd
       - apcupsd-doc
       - intel-microcode
@@ -19,20 +55,29 @@
       - net-tools
     update_cache: true
 
+# Enable and start qemu-guest-agent for hypervisor communication.
 - name: Start guest qemu-guest-agent
   ansible.builtin.service:
     name: qemu-guest-agent
     state: started
     enabled: true
 
+# Enable sysstat data collection (disabled by default on Debian/Ubuntu).
+- name: Enable sysstat data collection
+  ansible.builtin.lineinfile:
+    path: /etc/default/sysstat
+    regexp: '^ENABLED='
+    line: 'ENABLED="true"'
+  notify: restart sysstat
+
+# NTP and timezone commented out: enable once the internal NTP server is available.
 #- name: Install NTP Server
 #  timesync_ntp_servers:
 #     hostname: docker-ntp.realise.ch
 #     pool: yes
 #     iburst: yes
 #     nts: yes
-        
+
 #- name: Set timezone to Europe/Zurich
 #  community.general.timezone:
 #    name: Europe/Zurich
-

@@ -1,23 +1,33 @@
 ---
+# Task list: apt package update and conditional reboot.
+# Included by updates/main.yml and first-installation/main.yml.
+
+# Update all installed packages to the latest available version.
+# cache_valid_time avoids a new apt-get update if the cache is fresh (< 1h).
 - name: Update all packages to the latest version.
   ansible.builtin.apt:
-      update_cache: true
-      cache_valid_time: 3600
-      name: "*"
-      state: latest
+    update_cache: true
+    cache_valid_time: 3600
+    name: "*"
+    state: latest
 
+# Check whether the system requires a reboot after updates
+# (the file is created automatically by kernel/libc packages).
 - name: Check if a reboot is required.
   ansible.builtin.stat:
     path: /var/run/reboot-required
     get_checksum: no
   register: reboot_required_file
 
+# Reboot the server only if the reboot-required file exists.
+# test_command verifies the system is back online after the reboot.
 - name: Reboot the server (if required).
   ansible.builtin.reboot:
     reboot_timeout: 600
-    test_command: ping -c 4 192.168.100.3
-  when: reboot_required_file.stat.exists == true
+    test_command: whoami
+  when: reboot_required_file.stat.exists
 
+# Remove packages that were installed as dependencies and are no longer needed.
 - name: Remove dependencies that are no longer required.
   ansible.builtin.apt:
     autoremove: yes
