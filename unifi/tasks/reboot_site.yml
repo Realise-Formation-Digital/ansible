@@ -1,0 +1,46 @@
+---
+# Tasks for rebooting all switches in a single UniFi site.
+# Called by reboot.yml with loop variable: site (with keys 'name' and 'id').
+
+# Retrieve all devices managed by this site.
+- name: "{{ site.name }} | Get all devices"
+  ansible.builtin.uri:
+    url: "https://{{ unifi_host }}/proxy/network/api/s/{{ site.id }}/stat/device"
+    method: GET
+    headers:
+      Cookie: "{{ unifi_cookie }}"
+      X-CSRF-Token: "{{ unifi_csrf_token }}"
+    validate_certs: "{{ unifi_validate_certs }}"
+    status_code: 200
+  register: devices_response
+
+# Filter the device list to switches only (UniFi type: "usw").
+- name: "{{ site.name }} | Filter switches"
+  ansible.builtin.set_fact:
+    site_switches: "{{ devices_response.json.data | selectattr('type', 'equalto', 'usw') | list }}"
+
+# Display which switches will be rebooted before proceeding.
+- name: "{{ site.name }} | Show switches to be rebooted"
+  ansible.builtin.debug:
+    msg: "Rebooting: {{ item.name }} (MAC: {{ item.mac }})"
+  loop: "{{ site_switches }}"
+  loop_control:
+    label: "{{ item.name }}"
+
+# Send a restart command to each switch via the device manager API.
+- name: "{{ site.name }} | Reboot switches"
+  ansible.builtin.uri:
+    url: "https://{{ unifi_host }}/proxy/network/api/s/{{ site.id }}/cmd/devmgr"
+    method: POST
+    body_format: json
+    body:
+      cmd: restart
+      mac: "{{ item.mac }}"
+    headers:
+      Cookie: "{{ unifi_cookie }}"
+      X-CSRF-Token: "{{ unifi_csrf_token }}"
+    validate_certs: "{{ unifi_validate_certs }}"
+    status_code: 200
+  loop: "{{ site_switches }}"
+  loop_control:
+    label: "{{ item.name }} ({{ item.mac }})"

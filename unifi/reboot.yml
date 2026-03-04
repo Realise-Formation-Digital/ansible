@@ -1,9 +1,10 @@
 ---
-# Playbook: reboot all UniFi switches via the UniFi OS API.
+# Playbook: reboot all UniFi switches across multiple sites via the UniFi OS API.
 # Optionally reboots the UniFi Console itself (set reboot_console: true in credentials.yml).
 #
 # Targets UniFi OS (UDM, UDM-Pro, Cloud Key Gen2+).
 # Runs entirely on localhost - no SSH connection to UniFi devices required.
+# Sites are defined in vars/credentials.yml.
 #
 # Usage:
 #   ansible-playbook unifi/reboot.yml --ask-vault-pass
@@ -16,8 +17,8 @@
 
   tasks:
 
-    # Authenticate against the UniFi OS API and retrieve the session cookie
-    # and CSRF token required for subsequent requests.
+    # Authenticate against the UniFi OS API once for all sites.
+    # Retrieves the session cookie and CSRF token required for subsequent requests.
     - name: Login to UniFi API
       ansible.builtin.uri:
         url: "https://{{ unifi_host }}/api/auth/login"
@@ -30,59 +31,23 @@
         status_code: 200
       register: login_response
 
-    # Store the CSRF token from the login response headers.
-    # UniFi OS requires this token on all state-changing requests.
-    - name: Set CSRF token
+    # Store session credentials for reuse across all site iterations.
+    - name: Store session credentials
       ansible.builtin.set_fact:
         unifi_csrf_token: "{{ login_response.x_csrf_token | default('') }}"
         unifi_cookie: "{{ login_response.cookies_string }}"
 
-    # Retrieve all devices managed by the site.
-    - name: Get all UniFi devices
-      ansible.builtin.uri:
-        url: "https://{{ unifi_host }}/proxy/network/api/s/{{ unifi_site }}/stat/device"
-        method: GET
-        headers:
-          Cookie: "{{ unifi_cookie }}"
-          X-CSRF-Token: "{{ unifi_csrf_token }}"
-        validate_certs: "{{ unifi_validate_certs }}"
-        status_code: 200
-      register: devices_response
-
-    # Filter the device list to switches only (UniFi type: "usw").
-    - name: Filter switches from device list
-      ansible.builtin.set_fact:
-        unifi_switches: "{{ devices_response.json.data | selectattr('type', 'equalto', 'usw') | list }}"
-
-    # Display which switches will be rebooted before proceeding.
-    - name: Show switches to be rebooted
-      ansible.builtin.debug:
-        msg: "Rebooting: {{ item.name }} (MAC: {{ item.mac }})"
-      loop: "{{ unifi_switches }}"
+    # Process each site: fetch devices, filter switches, reboot them.
+    # include_tasks is required here (import_tasks does not support loops).
+    - name: Reboot switches for each site
+      ansible.builtin.include_tasks: tasks/reboot_site.yml
+      loop: "{{ unifi_sites }}"
       loop_control:
-        label: "{{ item.name }}"
-
-    # Send a restart command to each switch via the device manager API.
-    # Switches reboot one at a time to avoid simultaneous network disruption.
-    - name: Reboot all UniFi switches
-      ansible.builtin.uri:
-        url: "https://{{ unifi_host }}/proxy/network/api/s/{{ unifi_site }}/cmd/devmgr"
-        method: POST
-        body_format: json
-        body:
-          cmd: restart
-          mac: "{{ item.mac }}"
-        headers:
-          Cookie: "{{ unifi_cookie }}"
-          X-CSRF-Token: "{{ unifi_csrf_token }}"
-        validate_certs: "{{ unifi_validate_certs }}"
-        status_code: 200
-      loop: "{{ unifi_switches }}"
-      loop_control:
-        label: "{{ item.name }} ({{ item.mac }})"
+        loop_var: site
+        label: "{{ site.name }}"
 
     # Reboot the UniFi Console itself. Runs last to keep the API available
-    # for the switch reboot commands above. Disabled by default.
+    # for all switch reboot commands above. Disabled by default.
     - name: Reboot UniFi Console
       ansible.builtin.uri:
         url: "https://{{ unifi_host }}/api/system/reboot"
