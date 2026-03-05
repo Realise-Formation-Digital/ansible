@@ -1,0 +1,12 @@
+---
+# Sensitive variables for all hosts.
+# Encrypt this file with: ansible-vault encrypt group_vars/all/vault.yml
+# Edit after encryption with: ansible-vault edit group_vars/all/vault.yml
+# Run playbooks with: ansible-playbook <playbook> --ask-vault-pass
+
+# SSH public key for the 'maintenance' user (used by Semaphore UI).
+# Replace with the actual public key: ssh-keygen -t ed25519 -C "semaphore"
+vault_maintenance_ssh_public_key: "ssh-ed25519 AAAA_REPLACE_WITH_YOUR_KEY semaphore@host"
+
+# Username of the primary admin user added to the docker group.
+vault_admin_user: "realise"

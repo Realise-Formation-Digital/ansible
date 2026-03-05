@@ -14,6 +14,18 @@ Install required Ansible collections before running any playbook:
 ansible-galaxy collection install -r requirements.yml
 ```
 
+Sensitive variables live in `group_vars/all/vault.yml` (loaded automatically for all hosts). Before first use, fill in the values and encrypt the file:
+
+```bash
+# Edit values first, then encrypt
+ansible-vault encrypt group_vars/all/vault.yml
+
+# Edit an already-encrypted file
+ansible-vault edit group_vars/all/vault.yml
+```
+
+Run all playbooks with `--ask-vault-pass` (or `--vault-password-file`) after encrypting.
+
 ## Running Playbooks
 
 ```bash

@@ -28,23 +28,14 @@
     groups: docker
     append: true
 
-# Create the .ssh directory with correct permissions for key-based authentication.
-- name: Create .ssh directory for maintenance user
-  ansible.builtin.file:
-    path: /home/maintenance/.ssh
-    state: directory
-    owner: maintenance
-    group: maintenance
-    mode: '0700'
-
-# Create an empty authorized_keys file, ready to receive the Semaphore public key.
-- name: Create empty authorized_keys for maintenance user
-  ansible.builtin.file:
-    path: /home/maintenance/.ssh/authorized_keys
-    state: touch
-    owner: maintenance
-    group: maintenance
-    mode: '0600'
+# Deploy the Semaphore SSH public key from vault.yml into authorized_keys.
+# The authorized_key module handles .ssh directory and file creation automatically.
+- name: Set SSH authorized key for maintenance user
+  ansible.posix.authorized_key:
+    user: maintenance
+    key: "{{ vault_maintenance_ssh_public_key }}"
+    state: present
+    exclusive: true
 
 # --- SSH hardening ---
 

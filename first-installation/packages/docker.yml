@@ -69,10 +69,10 @@
     name: docker
     state: present
 
-# Add the 'realise' user to the docker group so they can run Docker commands without sudo.
-- name: Add realise user to "docker" group
+# Add the primary admin user to the docker group (defined in group_vars/all/vault.yml).
+- name: Add admin user to "docker" group
   ansible.builtin.user:
-    name: realise
+    name: "{{ vault_admin_user }}"
     groups: docker
     append: true
 
