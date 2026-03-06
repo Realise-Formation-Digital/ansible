@@ -1,19 +1,21 @@
 ---
 # Playbook: reboot all UniFi switches across multiple sites via the UniFi OS API.
-# Optionally reboots the UniFi Console itself (set reboot_console: true in credentials.yml).
+# Optionally reboots the UniFi Console itself (vault_unifi_reboot_console: true).
 #
 # Targets UniFi OS (UDM, UDM-Pro, Cloud Key Gen2+).
 # Runs entirely on localhost - no SSH connection to UniFi devices required.
-# Sites are defined in vars/credentials.yml.
+# Credentials and sites are defined in group_vars/all/vault.yml.
 #
-# Usage:
-#   ansible-playbook unifi/reboot.yml --ask-vault-pass
-#   ansible-playbook unifi/reboot.yml --ask-vault-pass -e "reboot_console=true"
+# Usage (CLI):
+#   ansible-playbook unifi/reboot.yml -i inventory/localhost.yml --ask-vault-pass
+#
+# Usage (Semaphore):
+#   Inventory: inventory/localhost.yml
+#   Vault key: vault-password (from Key Store)
+#   SSH key:   none required
 
 - hosts: localhost
   gather_facts: false
-  vars_files:
-    - vars/credentials.yml
 
   tasks:
 
@@ -21,13 +23,13 @@
     # Retrieves the session cookie and CSRF token required for subsequent requests.
     - name: Login to UniFi API
       ansible.builtin.uri:
-        url: "https://{{ unifi_host }}/api/auth/login"
+        url: "https://{{ vault_unifi_host }}/api/auth/login"
         method: POST
         body_format: json
         body:
-          username: "{{ unifi_username }}"
-          password: "{{ unifi_password }}"
-        validate_certs: "{{ unifi_validate_certs }}"
+          username: "{{ vault_unifi_username }}"
+          password: "{{ vault_unifi_password }}"
+        validate_certs: "{{ vault_unifi_validate_certs }}"
         status_code: 200
       register: login_response
 
@@ -41,7 +43,7 @@
     # include_tasks is required here (import_tasks does not support loops).
     - name: Reboot switches for each site
       ansible.builtin.include_tasks: tasks/reboot_site.yml
-      loop: "{{ unifi_sites }}"
+      loop: "{{ vault_unifi_sites }}"
       loop_control:
         loop_var: site
         label: "{{ site.name }}"
@@ -50,11 +52,11 @@
     # for all switch reboot commands above. Disabled by default.
     - name: Reboot UniFi Console
       ansible.builtin.uri:
-        url: "https://{{ unifi_host }}/api/system/reboot"
+        url: "https://{{ vault_unifi_host }}/api/system/reboot"
         method: POST
         headers:
           Cookie: "{{ unifi_cookie }}"
           X-CSRF-Token: "{{ unifi_csrf_token }}"
-        validate_certs: "{{ unifi_validate_certs }}"
+        validate_certs: "{{ vault_unifi_validate_certs }}"
         status_code: 200
-      when: reboot_console | bool
+      when: vault_unifi_reboot_console | bool

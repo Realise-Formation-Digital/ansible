@@ -1,0 +1,10 @@
+---
+# Inventory for playbooks that run locally via API (no SSH required).
+# Used by: unifi/reboot.yml
+# In Semaphore: set inventory type to "File" and path to "inventory/localhost.yml".
+
+all:
+  hosts:
+    localhost:
+      ansible_connection: local
+      ansible_python_interpreter: /usr/bin/python3

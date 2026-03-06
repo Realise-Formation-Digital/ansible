@@ -2,11 +2,35 @@
 # Sensitive variables for all hosts.
 # Encrypt this file with: ansible-vault encrypt group_vars/all/vault.yml
 # Edit after encryption with: ansible-vault edit group_vars/all/vault.yml
-# Run playbooks with: ansible-playbook <playbook> --ask-vault-pass
+
+# --- maintenance user ---
 
 # SSH public key for the 'maintenance' user (used by Semaphore UI).
-# Replace with the actual public key: ssh-keygen -t ed25519 -C "semaphore"
+# Generate with: ssh-keygen -t ed25519 -C "semaphore"
 vault_maintenance_ssh_public_key: "ssh-ed25519 AAAA_REPLACE_WITH_YOUR_KEY semaphore@host"
 
 # Username of the primary admin user added to the docker group.
 vault_admin_user: "realise"
+
+# --- UniFi API ---
+
+# IP or hostname of the UniFi Console (UDM, UDM-Pro, Cloud Key Gen2+).
+vault_unifi_host: "192.168.100.3"
+vault_unifi_username: "admin"
+vault_unifi_password: "changeme"
+
+# Set to false if using a self-signed certificate (typical in homelab).
+vault_unifi_validate_certs: false
+
+# Sites to target. The 'id' must match the site slug in the controller URL:
+# https://<host>/network/<id>/dashboard
+vault_unifi_sites:
+  - name: "Site 1"
+    id: "default"
+  - name: "Site 2"
+    id: "site2"
+  - name: "Site 3"
+    id: "site3"
+
+# Set to true to also reboot the console itself (runs last, after all switches).
+vault_unifi_reboot_console: false

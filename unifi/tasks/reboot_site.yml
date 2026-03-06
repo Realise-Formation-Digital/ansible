@@ -5,12 +5,12 @@
 # Retrieve all devices managed by this site.
 - name: "{{ site.name }} | Get all devices"
   ansible.builtin.uri:
-    url: "https://{{ unifi_host }}/proxy/network/api/s/{{ site.id }}/stat/device"
+    url: "https://{{ vault_unifi_host }}/proxy/network/api/s/{{ site.id }}/stat/device"
     method: GET
     headers:
       Cookie: "{{ unifi_cookie }}"
       X-CSRF-Token: "{{ unifi_csrf_token }}"
-    validate_certs: "{{ unifi_validate_certs }}"
+    validate_certs: "{{ vault_unifi_validate_certs }}"
     status_code: 200
   register: devices_response
 
@@ -30,7 +30,7 @@
 # Send a restart command to each switch via the device manager API.
 - name: "{{ site.name }} | Reboot switches"
   ansible.builtin.uri:
-    url: "https://{{ unifi_host }}/proxy/network/api/s/{{ site.id }}/cmd/devmgr"
+    url: "https://{{ vault_unifi_host }}/proxy/network/api/s/{{ site.id }}/cmd/devmgr"
     method: POST
     body_format: json
     body:
@@ -39,7 +39,7 @@
     headers:
       Cookie: "{{ unifi_cookie }}"
       X-CSRF-Token: "{{ unifi_csrf_token }}"
-    validate_certs: "{{ unifi_validate_certs }}"
+    validate_certs: "{{ vault_unifi_validate_certs }}"
     status_code: 200
   loop: "{{ site_switches }}"
   loop_control:
