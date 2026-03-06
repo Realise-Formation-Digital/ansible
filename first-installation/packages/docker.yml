@@ -34,13 +34,14 @@
   register: deb_architecture
   changed_when: false
 
-# Download the official Docker GPG key to verify repository packages.
+# Download the official Docker GPG key directly with curl as root.
+# get_url is avoided here: it checks directory writability as the connection user
+# before applying become, causing a false "not writable" error on /etc/apt/keyrings.
 - name: Add Docker GPG apt Key
-  ansible.builtin.get_url:
-    url: https://download.docker.com/linux/ubuntu/gpg
-    dest: /etc/apt/keyrings/docker.asc
-    mode: '0644'
-    force: true
+  ansible.builtin.shell:
+    cmd: curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc && chmod 0644 /etc/apt/keyrings/docker.asc
+    creates: /etc/apt/keyrings/docker.asc
+  changed_when: true
 
 # Add the official Docker repository for the current Ubuntu release (e.g. noble, jammy).
 # ansible_distribution_release is detected automatically by Ansible.
