@@ -37,11 +37,12 @@
 # Download the official Docker GPG key directly with curl as root.
 # get_url is avoided here: it checks directory writability as the connection user
 # before applying become, causing a false "not writable" error on /etc/apt/keyrings.
+# 'creates' is intentionally omitted: always re-download to avoid stale/empty key
+# files left by previously failed runs.
 - name: Add Docker GPG apt Key
   ansible.builtin.shell:
     cmd: curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc && chmod 0644 /etc/apt/keyrings/docker.asc
-    creates: /etc/apt/keyrings/docker.asc
-  changed_when: true
+  changed_when: false
 
 # Add the official Docker repository for the current Ubuntu release (e.g. noble, jammy).
 # ansible_distribution_release is detected automatically by Ansible.
