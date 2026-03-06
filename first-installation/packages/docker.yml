@@ -28,30 +28,17 @@
     state: directory
     mode: '0755'
 
-# Detect the system architecture (e.g. amd64, arm64) for the correct Docker repository.
-- name: Get Ubuntu architecture
-  ansible.builtin.command: dpkg --print-architecture
-  register: deb_architecture
-  changed_when: false
-
-# Download the official Docker GPG key directly with curl as root.
-# get_url is avoided here: it checks directory writability as the connection user
-# before applying become, causing a false "not writable" error on /etc/apt/keyrings.
-# 'creates' is intentionally omitted: always re-download to avoid stale/empty key
-# files left by previously failed runs.
-- name: Add Docker GPG apt Key
+# Download GPG key and write the repository file using the same shell commands
+# recommended in Docker's official installation docs. This avoids Ansible variable
+# rendering issues (trailing newlines, undefined vars) and runs entirely as root.
+- name: Add Docker GPG key and repository
   ansible.builtin.shell:
-    cmd: curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc && chmod 0644 /etc/apt/keyrings/docker.asc
+    cmd: |
+      curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+      chmod 0644 /etc/apt/keyrings/docker.asc
+      echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo "$VERSION_CODENAME") stable" \
+        > /etc/apt/sources.list.d/docker.list
   changed_when: false
-
-# Write the Docker repository file directly to sources.list.d.
-# Using copy instead of apt_repository avoids module quirks with signed-by paths
-# and ensures the file content is exactly as expected.
-- name: Add Docker Repository
-  ansible.builtin.copy:
-    dest: /etc/apt/sources.list.d/docker.list
-    content: "deb [arch={{ deb_architecture.stdout }} signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable\n"
-    #mode: '0644'
 
 # Explicitly refresh the apt cache after adding the Docker repository.
 - name: Update apt cache
